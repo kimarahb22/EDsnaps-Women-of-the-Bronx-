@@ -9,6 +9,7 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
 
+<!-- Custom Stylesheet Connection -->
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,7 +21,7 @@
     <header class="story-header">
       <h1>Bronx Women's History</h1>
       <p>Explore the incredible, impactful women connected to the MTA transit lines across the Bronx, researched by our summer program students.</p>
-      <div class="scroll-arrow">⬇ Scroll down to explore</div>
+      <div class="scroll-arrow">⬇ Scroll down or click map markers to explore</div>
     </header>
 
     <!-- 💡 STORY 1: Sonia Sotomayor -->
@@ -38,6 +39,13 @@
 
       <h3 class="section-title">Historical Impact</h3>
       <p class="description">Appointed in 2009, she made history as the first Latina and third woman Supreme Court Justice. She grew up in the Bronxdale Houses right near the Morrison Av station, walking these exact neighborhood streets during her youth.</p>
+
+      <!-- 🎓 Student Spotlight Information Box -->
+      <div class="student-credit-box">
+        <h4>Researched By:</h4>
+        <p class="student-meta"><strong>Name:</strong> Jane Doe, Age 16</p>
+        <p class="student-reflection"><strong>Why I chose her:</strong> "I think Justice Sotomayor is incredibly impactful because she proved that someone from a humble background in the Bronx could reach the highest court in America. She inspires me to pursue my dreams in law."</p>
+      </div>
     </article>
 
     <!-- 🎵 STORY 2: Jennifer Lopez -->
@@ -55,9 +63,14 @@
 
       <h3 class="section-title">Historical Impact</h3>
       <p class="description">A global pop icon, actress, and dancer who famously put her Bronx roots on the map with her smash hit debut album and title track 'On the 6'. The project was named directly after her daily transit commute line into Manhattan.</p>
-    </article>
 
-    <!-- ⬇️ Students can cleanly append more <article> sections here! -->
+      <!-- 🎓 Student Spotlight Information Box -->
+      <div class="student-credit-box">
+        <h4>Researched By:</h4>
+        <p class="student-meta"><strong>Name:</strong> John Smith, Age 15</p>
+        <p class="student-reflection"><strong>Why I chose her:</strong> "I love music and dance, and J.Lo shows how powerful Bronx creativity is on a global scale. She never forgot where she came from, which makes me proud of my borough."</p>
+      </div>
+    </article>
 
     <footer class="story-footer">
       <p>Created with ❤ by the Summer Youth Program.</p>
@@ -70,38 +83,37 @@
 <script>
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2ltYXJhYjIiLCJhIjoiY21yaWJmZW43MjBobTMxb2Q1eTVkbHBhbyJ9.Qe_Gdn17zIpt2aPAK9C4oA';
 
-// Coordinates configuration mapping each story element ID to a geographic spot
 const storyLocations = {
-  'sotomayor': {
-    center: [-73.8745, 40.8295],
-    zoom: 14.5,
-    pitch: 45,
-    bearing: -10
-  },
-  'jlo': {
-    center: [-73.8516, 40.8343],
-    zoom: 14.5,
-    pitch: 30,
-    bearing: 15
-  }
+  'sotomayor': { center: [-73.8745, 40.8295], zoom: 14.5, pitch: 45, bearing: -10 },
+  'jlo': { center: [-73.8516, 40.8343], zoom: 14.5, pitch: 30, bearing: 15 }
 };
 
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/outdoors-v12', 
-  center: [-73.8860, 40.8448], // Initial view showing the entire Bronx
+  center: [-73.8860, 40.8448], 
   zoom: 11,
   pitch: 0,
   bearing: 0
 });
 
-// Create markers to place persistently over the MTA stations
+// Create and style markers. Notice we added a click listener directly to each element!
 const markers = {
   'sotomayor': new mapboxgl.Marker({ color: '#1d3557' }).setLngLat([-73.8745, 40.8295]).addTo(map),
   'jlo': new mapboxgl.Marker({ color: '#e63946' }).setLngLat([-73.8516, 40.8343]).addTo(map)
 };
 
-// 📜 SCROLLYTELLING ENGINE
+// Bind clicks on markers to auto-scroll the matching sidebar card into view
+Object.keys(markers).forEach(id => {
+  markers[id].getElement().addEventListener('click', () => {
+    const targetElement = document.getElementById(id);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// 📜 SCROLLYTELLING VIEW WATCHER
 const sidebar = document.getElementById('story-sidebar');
 let activeStoryId = 'sotomayor';
 
@@ -111,22 +123,19 @@ sidebar.onscroll = () => {
   storyElements.forEach(element => {
     const bounds = element.getBoundingClientRect();
     
-    // Check if the narrative card is sitting cleanly in the view focal sweet-spot
     if (bounds.top >= 0 && bounds.top < window.innerHeight * 0.45) {
       const id = element.id;
       
       if (id !== activeStoryId && storyLocations[id]) {
         activeStoryId = id;
         
-        // Remove active visual class states
         storyElements.forEach(el => el.classList.remove('active-story'));
         element.classList.add('active-story');
         
-        // Smoothly fly the camera over to the next student project destination
         map.flyTo({
           ...storyLocations[id],
           essential: true,
-          duration: 2500 // Smooth panning transition time in milliseconds
+          duration: 2000 
         });
       }
     }
