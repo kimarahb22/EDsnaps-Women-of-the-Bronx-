@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bronx Women's History StoryMap</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 
+<!-- Mapbox GL JS -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+
+<!-- Custom Stylesheet Connection -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<!-- 🔘 FILTER BUTTONS CONTAINER -->
+<div class="filter-container">
+  <button class="filter-btn active" data-category="all" onclick="setFilter('all', this)">All Stories</button>
+  <button class="filter-btn" data-category="law-politics" onclick="setFilter('law-politics', this)">Law & Politics</button>
+  <button class="filter-btn" data-category="arts-entertainment" onclick="setFilter('arts-entertainment', this)">Arts & Entertainment</button>
+  <button class="filter-btn" data-category="literature" onclick="setFilter('literature', this)">Literature</button>
+  <button class="filter-btn" data-category="community-activism" onclick="setFilter('community-activism', this)">Community Activism</button>
+</div>
+
+<!-- 🗺️ MAP MOUNT -->
+<div id="map"></div>
+
+<script>
+// Keep your existing working access token
+mapboxgl.accessToken = 'pk.eyJ1Ijoia2ltYXJhYjIiLCJhIjoiY21yaWJmZW43MjBobTMxb2Q1eTVkbHBhbyJ9.Qe_Gdn17zIpt2aPAK9C4oA';
+
+// Centers map squarely on the Bronx with a closer default zoom
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/outdoors-v12', 
+  center: [-73.8860, 40.8448], 
+  zoom: 11.5
+});
+
+// Student Data GeoJSON 
+const womanData = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sonia Sotomayor",
+        "station": "💡 Sotomayor Houses / Morrison Av-Soundview (6 Train)",
+        "birthday": "June 25, 1954",
+        "hometown": "South Bronx, NY",
+        "category": "law-politics",
+        "image": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=400&q=80",
+        "impact": "Appointed in 2009, she made history as the first Latina and third woman Supreme Court Justice. She grew up in the Bronxdale Houses right near the Morrison Av station."
+      },
+      "geometry": { "type": "Point", "coordinates": [-73.8745, 40.8295] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jennifer Lopez",
+        "station": "🎵 Castle Hill Av (6 Train)",
+        "birthday": "July 24, 1969",
+        "hometown": "Castle Hill, Bronx",
+        "category": "arts-entertainment",
+        "image": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
+        "impact": "A global pop icon, actress, and dancer who famously put her Bronx roots on the map with her hit album and song 'On the 6', named directly after her daily commute line."
+      },
+      "geometry": { "type": "Point", "coordinates": [-73.8516, 40.8343] }
+    }
+  ]
+};
+
+map.on('load', () => {
+  map.addSource('women-history', { type: 'geojson', data: womanData });
+
+  map.addLayer({
+    id: 'women-points',
+    type: 'circle',
+    source: 'women-history',
+    paint: {
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        11, 8,
+        15, 16
+      ],
+      'circle-color': [
+        'match', ['get', 'category'],
+        'law-politics', '#1d3557',
+        'arts-entertainment', '#e63946',
+        'literature', '#f4a261',
+        'community-activism', '#2a9d8f',
+        '#888888'
+      ],
+      'circle-stroke-width': 3,
+      'circle-stroke-color': '#ffffff'
+    }
+  });
+
+  // Handle Popup Engine
+  map.on('click', 'women-points', (e) => {
+    const props = e.features[0].properties;
+    const coords = e.features[0].geometry.coordinates.slice();
+
+    new mapboxgl.Popup()
+      .setLngLat(coords)
+      .setHTML(`
+        <img class="popup-image" src="${props.image}" alt="${props.name}">
+        <div class="popup-text-layout">
+          <div class="popup-name">${props.name}</div>
+          <div class="popup-station">${props.station}</div>
+          
+          <div class="popup-meta-box">
+            <strong>Born:</strong> ${props.birthday}<br>
+            <strong>Hometown:</strong> ${props.hometown}
+          </div>
+          
+          <div class="popup-impact-title">Historical Impact</div>
+          <div class="popup-description">${props.impact}</div>
+        </div>
+      `)
+      .addTo(map);
+  });
+
+  // Hover States
+  map.on('mouseenter', 'women-points', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'women-points', () => map.getCanvas().style.cursor = '');
+});
+
+// Filter Functionality
+function setFilter(category, btn) {
+  if (category === 'all') {
+    map.setFilter('women-points', null);
+  } else {
+    map.setFilter('women-points', ['==', ['get', 'category'], category]);
+  }
+
+  const buttons = document.querySelectorAll('.filter-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+
+</body>
+</html>
