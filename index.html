@@ -117,10 +117,10 @@ Object.keys(markers).forEach(id => {
 
 // 🗺️ DRAW SUBWAY LINES ON THE MAP
 map.on('load', () => {
-  // Swapped to a verified, active GitHub link to completely bypass the 404 error
+  // Pulling a specialized dataset that already has a 'color' property pre-written for each track line!
   map.addSource('subway-routes', {
     type: 'geojson',
-    data: 'https://raw.githubusercontent.com/chriswhong/mapboxgl-nyc-subway/master/data/subway-lines.geojson'
+    data: 'https://raw.githubusercontent.com/theandymathews/nyc-subway-geojson/master/geojson/nyc-subway-lines.geojson'
   });
 
   // Render the subway path lines dynamically onto the canvas
@@ -133,20 +133,10 @@ map.on('load', () => {
       'line-cap': 'round'
     },
     paint: {
-      // ['to-string'] ensures that numeric train lines (like 2 and 5) match our text strings!
-      'line-color': [
-        'match', ['to-string', ['get', 'rt_symbol']],
-        '1', '#EE352E', '2', '#EE352E', '3', '#EE352E', // 🔴 Red Lines
-        '4', '#00933C', '5', '#00933C', '6', '#00933C', // 🟢 Green Lines
-        'A', '#0039A6', 'C', '#0039A6', 'E', '#0039A6', // 🔵 Blue Lines
-        'B', '#FF6319', 'D', '#FF6319', 'F', '#FF6319', 'M', '#FF6319', // 🟠 Orange Lines
-        'N', '#FCCC0A', 'Q', '#FCCC0A', 'R', '#FCCC0A', 'W', '#FCCC0A', // 🟡 Yellow Lines
-        'G', '#6CBE45', // Light Green
-        'L', '#A7A9AC', // Gray
-        'J', '#996633', 'Z', '#996633', // Brown
-        '#777777' // Default fallback color if line symbol isn't matched
-      ],
-      // Thick lines to keep track routes easily identifiable at high zoom levels
+      // Clean and simple: Read the color straight from the data file! No complex expression engine to crash.
+      'line-color': ['coalesce', ['get', 'color'], '#0039A6'],
+      
+      // Keep it nice and bold over the street grid
       'line-width': [
         'interpolate', ['linear'], ['zoom'],
         10, 4,
