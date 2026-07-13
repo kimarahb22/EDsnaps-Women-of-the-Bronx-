@@ -133,9 +133,9 @@ map.on('load', () => {
       'line-cap': 'round'
     },
     paint: {
-      // This dataset explicitly maps subway markers via the 'rt_symbol' label
+      // ['to-string'] ensures that numeric train lines (like 2 and 5) match our text strings!
       'line-color': [
-        'match', ['get', 'rt_symbol'],
+        'match', ['to-string', ['get', 'rt_symbol']],
         '1', '#EE352E', '2', '#EE352E', '3', '#EE352E', // 🔴 Red Lines
         '4', '#00933C', '5', '#00933C', '6', '#00933C', // 🟢 Green Lines
         'A', '#0039A6', 'C', '#0039A6', 'E', '#0039A6', // 🔵 Blue Lines
@@ -144,7 +144,7 @@ map.on('load', () => {
         'G', '#6CBE45', // Light Green
         'L', '#A7A9AC', // Gray
         'J', '#996633', 'Z', '#996633', // Brown
-        '#0039A6' // Default fallback color if line symbol isn't matched
+        '#777777' // Default fallback color if line symbol isn't matched
       ],
       // Thick lines to keep track routes easily identifiable at high zoom levels
       'line-width': [
