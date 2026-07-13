@@ -48,10 +48,10 @@
       </div>
     </article>
 
-    <!-- 🎵 STORY 2: Jennifer Lopez -->
-    <article id="Arlene Smith" class="story-card">
+    <!-- 🎵 STORY 2: Arlene Smith -->
+    <article id="Arlene" class="story-card">
       <div class="category-tag tag-arts">Arts & Entertainment</div>
-      <h2>Jennifer Lopez</h2>
+      <h2>Arlene Smith</h2>
       <div class="station-badge">🎵 Pelham Pkwy (2 Train)</div>
       
       <img class="story-image" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80" alt="Jennifer Lopez">
@@ -84,8 +84,8 @@
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2ltYXJhYjIiLCJhIjoiY21yaWJmZW43MjBobTMxb2Q1eTVkbHBhbyJ9.Qe_Gdn17zIpt2aPAK9C4oA';
 
 const storyLocations = {
-  'sotomayor': { center: [-73.8745, 40.8295], zoom: 14.5, pitch: 45, bearing: -10 },
-  'jlo': { center: [-73.8516, 40.8343], zoom: 14.5, pitch: 30, bearing: 15 }
+  'arly': { center: [-73.8561, 40.8581], zoom: 15.5, pitch: 45, bearing: 10 },
+  'Arlene': { center: [-73.8676, 40.8572], zoom: 15.5, pitch: 45, bearing: -15 }
 };
 
 const map = new mapboxgl.Map({
@@ -97,13 +97,15 @@ const map = new mapboxgl.Map({
   bearing: 0
 });
 
+
+
 // Create and style markers. Notice we added a click listener directly to each element!
 const markers = {
-  'sotomayor': new mapboxgl.Marker({ color: '#1d3557' }).setLngLat([-73.8745, 40.8295]).addTo(map),
-  'jlo': new mapboxgl.Marker({ color: '#e63946' }).setLngLat([-73.8516, 40.8343]).addTo(map)
+  'arly': new mapboxgl.Marker({ color: '#e63946' }).setLngLat([-73.8561, 40.8581]).addTo(map),
+  'Arlene': new mapboxgl.Marker({ color: '#2a9d8f' }).setLngLat([-73.8676, 40.8572]).addTo(map)
 };
 
-// Bind clicks on markers to auto-scroll the matching sidebar card into view
+// Bind clicks on markers to auto-scroll sidebar cards
 Object.keys(markers).forEach(id => {
   markers[id].getElement().addEventListener('click', () => {
     const targetElement = document.getElementById(id);
@@ -113,9 +115,50 @@ Object.keys(markers).forEach(id => {
   });
 });
 
+// 🗺️ DRAW SUBWAY LINES ON THE MAP
+map.on('load', () => {
+  // Fetch spatial subway routes data
+  map.addSource('subway-routes', {
+    type: 'geojson',
+    data: 'https://raw.githubusercontent.com/chriswhong/mapboxgl-nyc-subway/master/data/subway-lines.geojson'
+  });
+
+  // Render subway line paths using official MTA colors
+  map.addLayer({
+    id: 'subway-lines-layer',
+    type: 'line',
+    source: 'subway-routes',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': [
+        'match', ['get', 'rt_symbol'],
+        '1', '#EE352E', '2', '#EE352E', '3', '#EE352E', // 🔴 Red Lines
+        '4', '#00933C', '5', '#00933C', '6', '#00933C', // 🟢 Green Lines
+        'A', '#0039A6', 'C', '#0039A6', 'E', '#0039A6', // 🔵 Blue Lines
+        'B', '#FF6319', 'D', '#FF6319', 'F', '#FF6319', 'M', '#FF6319', // 🟠 Orange Lines
+        'N', '#FCCC0A', 'Q', '#FCCC0A', 'R', '#FCCC0A', 'W', '#FCCC0A', // 🟡 Yellow Lines
+        'G', '#6CBE45', // Light Green
+        'L', '#A7A9AC', // Gray
+        'J', '#996633', 'Z', '#996633', // Brown
+        '#777777' // Fallback gray
+      ],
+      'line-width': [
+        'interpolate', ['linear'], ['zoom'],
+        10, 2,
+        14, 4,
+        18, 8
+      ],
+      'line-opacity': 0.85
+    }
+  });
+});
+
 // 📜 SCROLLYTELLING VIEW WATCHER
 const sidebar = document.getElementById('story-sidebar');
-let activeStoryId = 'sotomayor';
+let activeStoryId = 'arly'; // Set initial active story to your first updated ID
 
 sidebar.onscroll = () => {
   const storyElements = document.querySelectorAll('.story-card');
