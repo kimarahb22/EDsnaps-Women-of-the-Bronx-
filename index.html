@@ -117,7 +117,7 @@ Object.keys(markers).forEach(id => {
 
 // 🗺️ DRAW SUBWAY LINES ON THE MAP
 map.on('load', () => {
-  // Using an alternate, highly-reliable public subway dataset
+  // Using the highly-reliable public NYC Open Data subway dataset
   map.addSource('subway-routes', {
     type: 'geojson',
     data: 'https://data.cityofnewyork.us/api/geospatial/39g3-6u2z?method=export&format=GeoJSON'
@@ -133,9 +133,9 @@ map.on('load', () => {
       'line-cap': 'round'
     },
     paint: {
-      // Coalesce looks at 'rt_symbol' first, and falls back to 'name' if empty
+      // NYC Open Data explicitly uses 'route_id' to label its tracks (e.g., "2", "5", "D")
       'line-color': [
-        'match', ['coalesce', ['get', 'rt_symbol'], ['get', 'name']],
+        'match', ['get', 'route_id'],
         '1', '#EE352E', '2', '#EE352E', '3', '#EE352E', // 🔴 Red Lines
         '4', '#00933C', '5', '#00933C', '6', '#00933C', // 🟢 Green Lines
         'A', '#0039A6', 'C', '#0039A6', 'E', '#0039A6', // 🔵 Blue Lines
@@ -144,16 +144,16 @@ map.on('load', () => {
         'G', '#6CBE45', // Light Green
         'L', '#A7A9AC', // Gray
         'J', '#996633', 'Z', '#996633', // Brown
-        '#777777' // Fallback neutral gray
+        '#FF00FF' // 💡 Bright Magenta Fallback: If any line fails, it will show up bright neon so we can spot it instantly!
       ],
-      // This ensures the lines stay thick and highly visible at close zooms like your screenshot
+      // Makes the lines thick and prominent over the standard map features
       'line-width': [
         'interpolate', ['linear'], ['zoom'],
-        10, 3,
-        14, 6,
-        18, 10
+        10, 4,
+        14, 8,
+        18, 14
       ],
-      'line-opacity': 0.9
+      'line-opacity': 0.95
     }
   });
 });
